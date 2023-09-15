@@ -2,8 +2,8 @@
 
 using Antlr.Expression;
 
-Console.WriteLine("Hello, World!");
-var str = "1==2";
+var str = "11>1";
 var expression = new Expression(str);
-//var result = expression.Calculate();
-//Console.WriteLine(result);
+var result = expression.Calculate(new Dictionary<string, ExpressionCalculatorValue>(), null, new Dictionary<string, IExpressionList>(), null, null);
+Console.WriteLine(str);
+Console.WriteLine(result.ToBool());

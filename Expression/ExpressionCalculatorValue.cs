@@ -89,6 +89,9 @@ public class ExpressionCalculatorValue
     }
 
     public static ExpressionCalculatorValue FromDecimal(decimal d) => new(ExpressionCalculatorValueType.Scalar, d.ToString(CultureInfo.InvariantCulture), d);
+
+    public static ExpressionCalculatorValue FromFilter(string expression, SimpleFilter filter) =>
+        new(ExpressionCalculatorValueType.Filter, expression, 0, null, null, filter);
 }
 
 public enum ExpressionCalculatorValueType

@@ -10,7 +10,8 @@ internal class ExpressionListLiteral : IExpressionList
     }
     public int Count() => list.Count;
 
-    public bool Contains(ExpressionCalculatorValue value) => list.Contains(value);
+    public bool Contains(ExpressionCalculatorValue value) =>
+        list.Any(x => x.ToDecimal() == value.ToDecimal() && x.ToStr() == value.ToStr());
 
     public IExpressionList Remove(List<ExpressionCalculatorValue> elements)
     {

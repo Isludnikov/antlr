@@ -4,11 +4,11 @@ namespace Antlr.Expression;
 
 public class ExpressionCalculatorValue
 {
-    public ExpressionCalculatorValueType Type;
-    private string scalarString;
-    private decimal scalarDecimal;
-    private List<ExpressionCalculatorValue> listLiteral;
-    private IExpressionList listReference;
+    public readonly ExpressionCalculatorValueType Type;
+    private readonly string scalarString;
+    private readonly decimal scalarDecimal;
+    private readonly List<ExpressionCalculatorValue> listLiteral;
+    private readonly IExpressionList listReference;
     private SimpleFilter filter;
     public ExpressionCalculatorValue(ExpressionCalculatorValueType type, string scalarString, decimal scalarDecimal, List<ExpressionCalculatorValue> listLiteral = null, IExpressionList listReference = null, SimpleFilter filter = null)
     {
@@ -38,7 +38,8 @@ public class ExpressionCalculatorValue
     }
     public bool Equal(ExpressionCalculatorValue obj)
     {
-        if (obj == this) {
+        if (obj == this)
+        {
             return true;
         }
 
@@ -46,7 +47,7 @@ public class ExpressionCalculatorValue
             && scalarString == obj.scalarString
             && (
                 (listLiteral == null && obj.listLiteral == null)
-            || (listLiteral?.SequenceEqual(obj.listLiteral)??false)
+            || (listLiteral?.SequenceEqual(obj.listLiteral) ?? false)
             );
     }
 
@@ -85,13 +86,35 @@ public class ExpressionCalculatorValue
     public static ExpressionCalculatorValue FromString(string str)
     {
         var parsingResult = decimal.TryParse(str, CultureInfo.InvariantCulture, out var d);
-        return new ExpressionCalculatorValue(ExpressionCalculatorValueType.Scalar, str, parsingResult ? d : 0);
+        return new ExpressionCalculatorValue(ExpressionCalculatorValueType.Scalar, str, parsingResult ? d : (string.IsNullOrEmpty(str) ? 0 : 1));
     }
 
     public static ExpressionCalculatorValue FromDecimal(decimal d) => new(ExpressionCalculatorValueType.Scalar, d.ToString(CultureInfo.InvariantCulture), d);
 
     public static ExpressionCalculatorValue FromFilter(string expression, SimpleFilter filter) =>
         new(ExpressionCalculatorValueType.Filter, expression, 0, null, null, filter);
+
+    public static ExpressionCalculatorValue FromObject(object result)
+    {
+        if (result == null) return FromNull();
+        if (result is ExpressionCalculatorValue value) return value;
+        if (result is IEnumerable<ExpressionCalculatorValue> enumerableValue) return FromArrayOfObjects(enumerableValue);
+        if (result is int intResult) return FromDecimal(intResult);
+        if (result is decimal decimalResult) return FromDecimal(decimalResult);
+        if (result is bool boolResult) return FromBool(boolResult);
+        return FromString(result.ToString());
+    }
+
+    public object ToType(Type type)
+    {
+        if (type.IsEquivalentTo(typeof(decimal))) return ToDecimal();
+        if (type.IsEquivalentTo(typeof(decimal?))) return IsNull() ? null : ToDecimal();
+        if (type.IsEquivalentTo(typeof(int))) return (int)ToDecimal();
+        if (type.IsEquivalentTo(typeof(int?))) return IsNull() ? null : (int)ToDecimal();
+        if (type.IsEquivalentTo(typeof(bool))) return ToBool();
+        if (type.IsEquivalentTo(typeof(bool?))) return IsNull() ? null : ToBool();
+        return ToStr();
+    }
 }
 
 public enum ExpressionCalculatorValueType
